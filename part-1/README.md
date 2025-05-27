@@ -8,8 +8,9 @@ In this hands-on example, I’m using **Kyverno** to write a simple policy that 
 
 ## 🛠️ Prerequisites
 
-- Minikube (or a Kubernetes cluster)
-
+- [Minikube (macOS ARM64 installer)](https://minikube.sigs.k8s.io/docs/start/?arch=%2Fmacos%2Farm64%2Fstable%2Fbinary+download)  
+  → For other platforms, visit the [Minikube start guide](https://minikube.sigs.k8s.io/docs/start/)
+- [kubectl](https://kubernetes.io/docs/tasks/tools/)
 
 
 ---

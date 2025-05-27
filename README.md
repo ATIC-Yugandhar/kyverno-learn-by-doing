@@ -11,22 +11,19 @@ Welcome! This repo contains a step-by-step Kyverno hands-on learning series desi
 | Part | Topic                             | Folder                              |
 |------|-----------------------------------|-------------------------------------|
 | 1    | Block Privileged Pods             | `part-1-block-privileged-pods/`     |
-| 2    | Kyverno Architecture & Flow       | `part-2-architecture-flow/`         |
-| 3    | Verify Signed Images with Cosign  | `part-3-verify-signed-images/`      |
-| 4    | Auto Inject Labels (Mutate)       | `part-4-auto-label-injection/`      |
-| 5    | Scan + Report Violations          | `part-5-policy-reports/`            |
-| 6    | Auto Generate ConfigMaps/RBAC     | `part-6-generate-resources/`        |
 
-Each folder has:
-- 📄 `README.md` with hands-on steps
-- 🔐 Kyverno policy YAMLs
-- 🧪 Test resources
-- 🎨 Visuals (for relevant parts)
 
----
+
+
+
+## 🛠️ Prerequisites
+
+- [Minikube (macOS ARM64 installer)](https://minikube.sigs.k8s.io/docs/start/?arch=%2Fmacos%2Farm64%2Fstable%2Fbinary+download)  
+  → For other platforms, visit the [Minikube start guide](https://minikube.sigs.k8s.io/docs/start/)
+- [kubectl](https://kubernetes.io/docs/tasks/tools/)
+
 
 ## 🚀 Getting Started
 
 ```bash
 minikube start --memory=4096 --cpus=2
-kubectl apply -f https://github.com/kyverno/kyverno/releases/download/v1.14.0/install.yaml
