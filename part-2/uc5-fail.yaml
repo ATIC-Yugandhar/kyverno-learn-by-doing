@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: uc5-fail
+  labels:
+    app.kubernetes.io/owner: test
+spec:
+  containers:
+    - name: test
+      image: nginx:latest                 # ❌ Not from an approved registry
+      securityContext:
+        privileged: false
+      resources:
+        requests:
+          cpu: "100m"
+          memory: "128Mi"
+        limits:
+          cpu: "200m"
+          memory: "256Mi"

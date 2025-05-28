@@ -1,0 +1,29 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: restrict-image-registries
+  annotations:
+    policies.kyverno.io/description: >-
+      Only allow container images from approved registries such as ghcr.io and internal registries.
+      Prevents use of public/unscanned/untrusted images in production clusters.
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: only-allow-approved-registries
+      match:
+        resources:
+          kinds:
+            - Pod
+      validate:
+        message: "Only images from approved registries are allowed."
+        foreach:
+          - list: "request.object.spec.containers[]"
+            deny:
+              conditions:
+                all:
+                  - key: "{{ element.image }}"
+                    operator: AnyNotIn
+                    value:
+                      - "ghcr.io/allthingsincloud/nginx:latest"
+                      - "registry.allthingsincloud.com"

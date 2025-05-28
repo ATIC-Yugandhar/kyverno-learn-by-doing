@@ -1,0 +1,21 @@
+# Kyverno policy to block privileged containers
+apiVersion: kyverno.io/v1          # Kyverno CRD version
+kind: ClusterPolicy                # Applies to all namespaces
+metadata:
+  name: block-privileged           # Policy name
+
+spec:
+  validationFailureAction: Enforce # Block if rule is violated
+  rules:
+    - name: no-privileged          # Rule to deny privileged Pods
+      match:
+        resources:
+          kinds:
+            - Pod                 # Target only Pod resources
+      validate:
+        message: "Privileged containers are not allowed."  # Error message
+        pattern:
+          spec:
+            containers:
+              - securityContext:
+                  privileged: "false"  # Must not be privileged

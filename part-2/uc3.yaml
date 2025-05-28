@@ -1,0 +1,21 @@
+# Kyverno policy to enforce the presence of an owner label
+apiVersion: kyverno.io/v1                           # Kyverno CRD version
+kind: ClusterPolicy                                 # Policy applies to the entire cluster
+metadata:
+  name: require-labels                              # Unique name for the policy
+
+spec:
+  validationFailureAction: Enforce                  # Block the resource if it fails validation
+  rules:
+    - name: require-owner-label                     # Name of the validation rule
+      match:
+        resources:
+          kinds:
+            - Pod                                   # This rule targets Pod resources only
+
+      validate:                                     # Begin validation logic
+        message: "The app.kubernetes.io/owner label is required."  # Message shown on failure
+        pattern:
+          metadata:
+            labels:
+              app.kubernetes.io/owner: "?*"         # This label must exist with any value

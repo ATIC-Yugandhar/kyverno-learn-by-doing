@@ -1,0 +1,10 @@
+apiVersion: v1                # API group used to define a standard Kubernetes Pod
+kind: Pod                     # Declares that this resource is of type 'Pod'
+metadata:
+  name: uc1-pass                # The name given to the Pod object
+spec:
+  containers:                 # Start of the container list inside the Pod
+    - name: nginx             # Name of the container (can be any name)
+      image: nginx            # The container image being used (from DockerHub)
+      securityContext:
+        privileged: false      
