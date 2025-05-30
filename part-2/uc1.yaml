@@ -1,21 +1,33 @@
-# Kyverno policy to block privileged containers
-apiVersion: kyverno.io/v1          # Kyverno CRD version
-kind: ClusterPolicy                # Applies to all namespaces
+# Kyverno policy to require CPU and memory requests and limits
+apiVersion: kyverno.io/v1                     # Kyverno CRD version
+kind: ClusterPolicy                           # Cluster-wide policy, applies to all namespaces
 metadata:
-  name: block-privileged           # Policy name
+  name: require-resources                     # Unique name for the policy
+  annotations:                                # Metadata annotations for documentation and tooling
+    policies.kyverno.io/title: Require CPU and Memory Limits        # Human-readable policy title
+    policies.kyverno.io/category: Resource Management               # Category for grouping similar policies
+    policies.kyverno.io/severity: high                              # Severity level for policy violation
+    policies.kyverno.io/description: >-                             # Long-form description of the policy's purpose
+      Ensures all containers define both CPU and memory requests and limits.
 
 spec:
-  validationFailureAction: Enforce # Block if rule is violated
+  validationFailureAction: Enforce            # Reject resource if it violates this policy (use 'audit' for dry-run)
   rules:
-    - name: no-privileged          # Rule to deny privileged Pods
+    - name: check-resources                   # Rule name within the policy
       match:
         resources:
           kinds:
-            - Pod                 # Target only Pod resources
-      validate:
-        message: "Privileged containers are not allowed."  # Error message
-        pattern:
-          spec:
-            containers:
-              - securityContext:
-                  privileged: "false"  # Must not be privileged
+            - Pod                             # Apply this rule only to Pod resources
+
+      validate:                               # Validation rule section
+        message: "CPU and memory requests/limits are required."  # Error message shown on violation
+        anyPattern:                           # Use 'anyPattern' to allow multiple acceptable patterns
+          - spec:
+              containers:
+                - resources:
+                    requests:
+                      memory: "?*"            # Require a non-empty memory request
+                      cpu: "?*"               # Require a non-empty CPU request
+                    limits:
+                      memory: "?*"            # Require a non-empty memory limit
+                      cpu: "?*"               # Require a non-empty CPU limit

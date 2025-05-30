@@ -1,0 +1,15 @@
+# uc2-compliant.yaml
+# This Pod explicitly defines runAsNonRoot: true and uses a valid non-root user.
+# Kyverno will skip mutation as it already meets the policy requirements.
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: uc2-compliant
+spec:
+  containers:
+    - name: nginx
+      image: nginxinc/nginx-unprivileged:stable-alpine  # Image supports non-root user
+      securityContext:
+        runAsNonRoot: true     # ✅ Already explicitly defined
+        runAsUser: 101         # ✅ Non-root UID ('nginx' user)

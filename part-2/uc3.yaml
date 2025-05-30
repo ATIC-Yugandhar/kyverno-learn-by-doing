@@ -1,21 +1,37 @@
-# Kyverno policy to enforce the presence of an owner label
-apiVersion: kyverno.io/v1                           # Kyverno CRD version
-kind: ClusterPolicy                                 # Policy applies to the entire cluster
+# Kyverno policy to auto-generate a default deny-all NetworkPolicy in every new namespace
+apiVersion: kyverno.io/v1                       # Kyverno CRD version
+kind: ClusterPolicy                             # Cluster-wide policy
+
 metadata:
-  name: require-labels                              # Unique name for the policy
+  name: generate-default-deny                   # Unique policy name
+  annotations:                                  # Informative annotations
+    policies.kyverno.io/title: Generate Default Deny NetworkPolicy         # Policy title for UIs/catalogs
+    policies.kyverno.io/category: Network Security                         # Categorize under network controls
+    policies.kyverno.io/severity: medium                                   # Medium severity - security best practice
+    policies.kyverno.io/description: >-                                    # Detailed description
+      Automatically generates a default deny-all NetworkPolicy in new namespaces.
 
 spec:
-  validationFailureAction: Enforce                  # Block the resource if it fails validation
   rules:
-    - name: require-owner-label                     # Name of the validation rule
+    - name: default-deny                        # Name of this rule
       match:
         resources:
           kinds:
-            - Pod                                   # This rule targets Pod resources only
+            - Namespace                         # Apply when a new Namespace is created
 
-      validate:                                     # Begin validation logic
-        message: "The app.kubernetes.io/owner label is required."  # Message shown on failure
-        pattern:
+      generate:                                 # Define the generation behavior
+        kind: NetworkPolicy                     # Resource type to generate
+        apiVersion: networking.k8s.io/v1        # Required API version for NetworkPolicy
+        name: default-deny                      # Name of the generated NetworkPolicy
+        namespace: "{{request.object.metadata.name}}"  # Target namespace is the one just created
+        synchronize: true                       # Keep the generated policy in sync with the source
+
+        data:                                   # Template for the generated NetworkPolicy
           metadata:
             labels:
-              app.kubernetes.io/owner: "?*"         # This label must exist with any value
+              generated-by: kyverno             # Label for traceability
+          spec:
+            podSelector: {}                     # Target all Pods in the namespace
+            policyTypes:
+              - Ingress                         # Block all incoming traffic
+              - Egress                          # Block all outgoing traffic

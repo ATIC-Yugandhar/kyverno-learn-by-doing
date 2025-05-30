@@ -1,0 +1,7 @@
+# uc3-compliant.yaml
+# This namespace creation should trigger Kyverno to generate a NetworkPolicy
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: secure-apps

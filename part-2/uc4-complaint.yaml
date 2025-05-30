@@ -1,0 +1,16 @@
+# uc4-compliant.yaml
+# This Pod uses a Cosign-signed image that matches the required pattern in the policy.
+# Kyverno will allow it because the image is verifiably signed using the configured public key.
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: signed-busybox
+spec:
+  containers:
+    - name: main
+      image: docker.io/yreddy007/busybox:signed-test1   # ✅ Signed and trusted image
+      command: [ "sh", "-c", "sleep 3600" ]             # Placeholder command
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000                                 # Non-root UID

@@ -1,27 +1,28 @@
-# Kyverno policy to require CPU and memory requests and limits
+# Kyverno policy to enforce runAsNonRoot: true for all containers
 apiVersion: kyverno.io/v1                     # Kyverno CRD version
-kind: ClusterPolicy                           # Cluster-wide policy, applies to all namespaces
+kind: ClusterPolicy                           # Cluster-wide policy
+
 metadata:
-  name: require-resources                     # Name of the policy for reference
+  name: enforce-run-as-non-root               # Unique name for this policy
+  annotations:                                # Metadata annotations for clarity and tooling
+    policies.kyverno.io/title: Enforce runAsNonRoot                 # Title shown in policy catalogs
+    policies.kyverno.io/category: Pod Security                      # Group under security-related policies
+    policies.kyverno.io/severity: high                              # High severity if this is violated
+    policies.kyverno.io/description: >-                             # Policy description
+      Ensures that all containers explicitly run as non-root by injecting runAsNonRoot: true.
 
 spec:
-  validationFailureAction: Enforce            # Block the resource if it violates the rule
   rules:
-    - name: check-resources                   # Rule to enforce resource settings
+    - name: add-run-as-non-root               # Rule name within this policy
       match:
         resources:
           kinds:
-            - Pod                             # This rule only applies to Pods
+            - Pod                             # This rule applies to all Pod resources
 
-      validate:                               # Define validation logic here
-        message: "CPU and memory requests/limits are required."  # Shown when rule is violated
-        anyPattern:                              # Expected structure of a valid Pod
-          - spec:
-              containers:
-                - resources:
-                    requests:
-                      memory: "?*"              # Each container must set a memory request
-                      cpu: "?*"                 # Each container must set a CPU request
-                    limits:
-                      memory: "?*"              # Each container must set a memory limit
-                      cpu: "?*"                 # Each container must set a CPU limit
+      mutate:                                 # Define the mutation behavior
+        patchStrategicMerge:                  # Use strategic merge patch for injection
+          spec:
+            containers:
+              - (name): "*"                   # Match all container names
+                securityContext:
+                  runAsNonRoot: true          # Inject this field to enforce non-root execution

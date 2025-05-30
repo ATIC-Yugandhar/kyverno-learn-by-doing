@@ -1,0 +1,10 @@
+# uc4-noncompliant.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: unsigned-busybox
+spec:
+  containers:
+    - name: main
+      image: docker.io/yreddy007/busybox:latest       # Unsigned tag
+      command: ["sh", "-c", "sleep 3600"]

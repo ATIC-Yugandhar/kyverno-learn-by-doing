@@ -1,0 +1,14 @@
+# uc2-noncompliant.yaml
+# This Pod omits runAsNonRoot. Kyverno will mutate it by injecting runAsNonRoot: true.
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: uc2-noncompliant
+spec:
+  containers:
+    - name: nginx
+      image: nginxinc/nginx-unprivileged:stable-alpine
+      securityContext:
+        runAsUser: 101         # Non-root UID is set, but missing runAsNonRoot
+        # ❌ runAsNonRoot: true will be auto-injected by Kyverno

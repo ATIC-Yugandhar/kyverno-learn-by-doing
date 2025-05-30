@@ -1,35 +1,33 @@
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+# Kyverno policy to enforce signed image verification using Cosign
+apiVersion: kyverno.io/v1                       # Kyverno CRD version
+kind: ClusterPolicy                             # Cluster-wide policy
+
 metadata:
-  name: disallow-host-namespaces
-  annotations:
-    policies.kyverno.io/title: Disallow Host Namespaces
-    policies.kyverno.io/category: Pod Security Standards (Baseline)
-    policies.kyverno.io/severity: medium
-    kyverno.io/kyverno-version: 1.6.0
-    kyverno.io/kubernetes-version: "1.22-1.23"
-    policies.kyverno.io/subject: Pod
-    policies.kyverno.io/description: >-
-      Host namespaces (Process ID namespace, Inter-Process Communication namespace, and
-      network namespace) allow access to shared information and can be used to elevate
-      privileges. Pods should not be allowed access to host namespaces. This policy ensures
-      fields which make use of these host namespaces are unset or set to `false`.
+  name: verify-signed-images                    # Unique name for this policy
+  annotations:                                  # Metadata annotations for discoverability
+    policies.kyverno.io/title: Require Signed Images (Cosign)               # Display title
+    policies.kyverno.io/category: Supply Chain Security                     # Categorization under image security
+    policies.kyverno.io/severity: high                                     # High severity due to supply chain risk
+    policies.kyverno.io/description: >-                                    # Detailed description
+      Verify that busybox images are signed with Cosign (yreddy007 namespace).
+
 spec:
-  validationFailureAction: Enforce
-  background: true
+  validationFailureAction: Enforce              # Reject resources that fail signature checks
+  background: false                             # Skip background scans (only enforce at admission time)
+
   rules:
-    - name: host-namespaces
+    - name: require-signed-busybox              # Name of the rule
       match:
-        any:
-        - resources:
-            kinds:
-              - Pod
-      validate:
-        message: >-
-          Sharing the host namespaces is disallowed. The fields spec.hostNetwork,
-          spec.hostIPC, and spec.hostPID must be unset or set to `false`.
-        pattern:
-          spec:
-            =(hostPID): "false"
-            =(hostIPC): "false"
-            =(hostNetwork): "false"
+        resources:
+          kinds:
+            - Pod                               # Apply to Pod resources
+
+      verifyImages:                             # Image signature verification block
+        - image: "docker.io/yreddy007/busybox:*"     # Target image pattern (all tags of busybox from this namespace)
+          key: |                                 # Cosign public key used to verify the image signature
+            -----BEGIN PUBLIC KEY-----
+            MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEgbeLsB7P3K7dGwGdxVOLuaEOvudS
+            g1AXLc3qK0sMF2992uB0xlsslmG60X/Iuv6tUeIprXDOvCdH1Tpblm97bA==
+            -----END PUBLIC KEY-----
+          mutateDigest: true                    # Automatically resolve image to digest after signature is verified
+          required: true                        # Fail the admission request if the image is not signed

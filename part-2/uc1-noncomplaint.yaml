@@ -1,0 +1,14 @@
+# uc4-noncompliant.yaml
+# This Pod uses the 'latest' tag which is unsigned.
+# Kyverno will reject this Pod due to missing image signature verification.
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: unsigned-busybox
+spec:
+  containers:
+    - name: main
+      image: docker.io/yreddy007/busybox:latest         # ❌ No valid signature found for this tag
+      command: ["sh", "-c", "sleep 3600"]
+      # Kyverno will block this due to missing or invalid image signature

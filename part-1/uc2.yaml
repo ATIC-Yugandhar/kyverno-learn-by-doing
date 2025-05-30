@@ -1,0 +1,27 @@
+# Kyverno policy to require CPU and memory requests and limits
+apiVersion: kyverno.io/v1                     # Kyverno CRD version
+kind: ClusterPolicy                           # Cluster-wide policy, applies to all namespaces
+metadata:
+  name: require-resources                     # Name of the policy for reference
+
+spec:
+  validationFailureAction: Enforce            # Block the resource if it violates the rule
+  rules:
+    - name: check-resources                   # Rule to enforce resource settings
+      match:
+        resources:
+          kinds:
+            - Pod                             # This rule only applies to Pods
+
+      validate:                               # Define validation logic here
+        message: "CPU and memory requests/limits are required."  # Shown when rule is violated
+        anyPattern:                              # Expected structure of a valid Pod
+          - spec:
+              containers:
+                - resources:
+                    requests:
+                      memory: "?*"              # Each container must set a memory request
+                      cpu: "?*"                 # Each container must set a CPU request
+                    limits:
+                      memory: "?*"              # Each container must set a memory limit
+                      cpu: "?*"                 # Each container must set a CPU limit

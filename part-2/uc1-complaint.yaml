@@ -1,0 +1,20 @@
+# Compliant Pod: defines both CPU and memory requests/limits
+apiVersion: v1
+kind: Pod
+metadata:
+  name: uc1-compliant
+  labels:
+    app.kubernetes.io/env: test                  # Optional labels for environment tagging
+spec:
+  containers:
+    - name: nginx
+      image: nginx:latest                        # You can pin a tag or use a digest
+      securityContext:
+        privileged: false                        # Not required by this policy, but good practice
+      resources:                                 # Required block for CPU and memory enforcement
+        requests:
+          cpu: "100m"                            # Request minimum CPU
+          memory: "128Mi"                        # Request minimum memory
+        limits:
+          cpu: "200m"                            # Set max CPU allowed
+          memory: "256Mi"                        # Set max memory allowed

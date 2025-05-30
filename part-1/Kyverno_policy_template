@@ -1,0 +1,42 @@
+# 👇 Required: Defines the API group and version for Kyverno policies
+apiVersion: kyverno.io/v1
+
+# 👇 Required: Type of policy.
+# In v1.14.1, valid options include:
+# - ClusterPolicy: Global policies enforced by the Kyverno engine.
+# - ValidationPolicy: Webhook-based validation introduced in v1.14.
+# - ImageValidationPolicy: For verifying image signatures via verifyImages.
+# - ClusterCleanupPolicy: for scheduled resource cleanup tasks
+kind: ClusterPolicy
+
+# 👇 Required: Basic identifying information
+metadata:
+  name: <policy-name>                    # Required. A unique name (DNS-compliant).
+  annotations:
+    policies.kyverno.io/description: >-  # Optional but highly recommended.
+      <human-readable explanation>       # Helps document the intent of the policy.
+
+# 👇 Required: Main logic of the policy
+spec:
+  validationFailureAction: Enforce       # Required. 'Enforce' blocks; 'Audit' just logs.
+                                         # Can be overridden per-rule if needed.
+
+  background: true                       # Optional. Enables background scans (default: true).
+
+  rules:                                 # Required. List of one or more rules.
+    - name: <rule-name>                  # Required. Unique name for the rule.
+      match:                             # Required. Defines the scope—what this rule applies to.
+        resources:
+          kinds:
+            - Pod                        # Required inside `match`. The target resource kinds.
+          namespaces:                    # Optional. Limit rule to specific namespaces.
+            - default
+        selector:                        # Optional. Label-based filter for finer control.
+          matchLabels:
+            app: frontend
+
+      <rule-type>:                       # Required. One of:
+        validate:                        # Enforce field-level patterns or deny conditions
+        mutate:                          # Patch or modify resources before admission
+        generate:                        # Automatically create new resources
+        <rule-definition>
